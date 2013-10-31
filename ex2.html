@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title></title>
+</head>
+<body>
+  <h1>Ejemplo de indexedDB</h1>
+  <script>
+  document.addEventListener('DOMContentLoaded', function(){
+    if('indexedDB' in window){
+      
+      var openRequest = indexedDB.open("prueba", 2);
+      var db;
+
+
+      openRequest.onupgradeneeded = function(e){
+        var thisDB = e.target.result;
+        console.log("Corriendo el método onupgradeneeded....");
+        if(!thisDB.objectStoreNames.contains("miTabla")){
+          thisDB.createObjectStore("miTabla");
+          console.log("Creando miTabla...");
+          console.dir(thisDB.objectStoreNames);
+        
+        }
+
+
+      }
+
+
+      openRequest.onerror = function(e){
+        console.log("Algo no ha ido bien");
+      
+      }
+
+      openRequest.onsuccess = function(e){
+        console.log("Corriendo el método onsuccess");
+        db = e.target.result;
+      
+      }
+    }
+  });
+  </script>
+
+</body>
+</html>
+

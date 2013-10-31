@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title></title>
+</head>
+<body>
+  <h1>Ejemplo de indexedDB</h1>
+  <script>
+  
+  document.addEventListener('DOMContentLoaded', function(){
+    if('indexedDB' in window){
+      
+      var openRequest = indexedDB.open("prueba", 1);
+      var db;
+
+
+      openRequest.onupgradeneeded = function(e){
+        console.log("Corriendo el método onupgradeneededupgrade needed....");
+
+      }
+
+      openRequest.onsuccess = function(e){
+        console.log("Corriendo el método onsuccess");
+        db = e.target.result;
+      
+      }
+    }
+  });
+  </script>
+</body>
+</html>

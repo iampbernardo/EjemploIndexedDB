@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title></title>
+</head>
+<body>
+  <h1>Ejemplo de indexedDB</h1>
+  <script>
+  document.addEventListener('DOMContentLoaded', function(){
+    if('indexedDB' in window){
+      
+      var openRequest = indexedDB.open("prueba", 15);
+      var db;
+
+
+      openRequest.onupgradeneeded = function(e){
+        var thisDB = e.target.result;
+        console.log("Corriendo el método onupgradeneeded....");
+        if(!thisDB.objectStoreNames.contains("alumnos")){
+          thisDB.createObjectStore("alumnos", {autoIncrement: true});
+          //thisDB.createObjectStore("alumnos", { keypath: "email"}); // campo unico
+          //thisDB.createObjectStore("alumnos");
+          console.log("Creando miTabla...");
+          //console.log(thisDB.objectStoreNames);
+        
+        }else{
+          //thisDB.deleteObjectStore("alumnos");
+      
+        }
+
+
+      }
+
+
+      openRequest.onerror = function(e){
+        console.log("Algo no ha ido bien");
+      
+      }
+
+      openRequest.onsuccess = function(e){
+        db = e.target.result;
+        console.log("Corriendo el método onsuccess");
+        //console.dir(db.objectStoreNames);
+        //console.log(db.objectStore("alumnos"));
+        console.log(db);
+
+        document.querySelector("#addButton").addEventListener("click", addAlumno, false);
+        document.querySelector("#readButton").addEventListener("click", readAlumno, false);
+        document.querySelector("#readAllButton").addEventListener("click", getAllAlumnos, false);
+      
+      }
+    }
+
+    function addAlumno(e){
+      // Tomamos los valores que vamos a guardar
+        var nombre = document.querySelector("#nombre").value;
+        var email = document.querySelector("#email").value;
+
+        console.log("Alumno a añadir " + nombre + " " + email);
+
+        //Creamos una transacción ( transaction )
+
+        var transaction = db.transaction(["alumnos"], "readwrite");
+
+        // Tomamos el almacen a través de la transacción
+        var almacen = transaction.objectStore("alumnos");
+        console.log(almacen);
+    
+
+        // Creamos el objeto a almacenar
+        var alumno = {
+          nombre: nombre,
+          email: email,
+          creado: new Date()
+        }
+
+        // Y lo guardamos...
+
+        var request = almacen.add(alumno); // No le pasamos un id
+    
+    }
+
+
+    function readAlumno(){
+      // Iniciamos la transacción como de solo lectura
+        var numero = document.querySelector("#numero").value;
+        var divResultados = document.querySelector("#resultados");
+        var transaction = db.transaction(["alumnos"], "readonly");
+        var almacen = transaction.objectStore("alumnos");
+
+        // Establecemos la petición
+        var request = almacen.get(Number(numero));
+
+        request.onsuccess = function(e){
+          result = e.target.result;        
+
+          if(result){
+            console.log(result);
+            var str = "<h2>Key: " + numero + "</h2>"; 
+            for (var field in result){
+              str+= field + " = " + result[field] + "<br/>";
+            }
+            divResultados.innerHTML = str;
+          }else{
+            divResultados.innerHTML = "<h2> No hay resultados </h2>";
+          }
+        }
+    }
+
+    function getAllAlumnos(e){
+        //var numero = document.querySelector("#numero").value;
+        var str = "";
+        var divResultados = document.querySelector("#resultados");
+        db.transaction(["alumnos"], "readonly").objectStore("alumnos").openCursor().onsuccess = function(e){
+          var cursor = e.target.result;
+          if(cursor){
+            // Hacemos algo si quedan registros
+            str+= "<h2>Key: " + cursor.key + "</h2>"; 
+            for (var field in cursor.value){
+              str+="<p>";
+              str+= field + " = "+ cursor.value[field] + "<br/>";
+              str+="</p>";
+            }
+              cursor.continue();
+          }
+            divResultados.innerHTML = str;
+        
+        }
+    }
+
+  });
+  </script>
+  <input id="nombre" type="text">
+  <br/>
+  <input id="email" type="text">
+  <br/>
+  <button id="addButton">Añadir</button>
+  <br/>
+  <input id="numero" type="text">
+  <br/>
+  <button id="readButton">Buscar</button>
+  <br/>
+  <button id="readAllButton">Ver todos</button>
+  <br/>
+  <div id="resultados">
+  
+  </div>
+
+</body>
+</html>
+
+
+
+
+
